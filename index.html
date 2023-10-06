@@ -38,31 +38,32 @@
         }
     </script>
 </head>
-<body>
-  <div class="container mx-auto mt-10 p-5">
-  <h2 class="text-2xl font-bold mb-5">Apply for a Job</h2>
+<body class="bg-gradient-to-r from-teal-400 to-blue-500 min-h-screen flex items-center">
+
+<div class="container mx-auto mt-10 p-5 bg-white rounded-lg shadow-lg w-full max-w-lg">
+  <h2 class="text-3xl font-bold mb-5 text-gray-700">Apply for a Job</h2>
   <form action="/submit" method="post" enctype="multipart/form-data" class="space-y-4">
     <div class="flex flex-col">
-      <label for="firstName" class="mb-2">First Name</label>
-      <input type="text" id="firstName" name="firstName" placeholder="Enter First Name" required class="p-2 border rounded-md">
+      <label for="firstName" class="mb-2 text-gray-600">First Name</label>
+      <input type="text" id="firstName" name="firstName" placeholder="Enter First Name" required class="p-2 border rounded-md focus:border-indigo-500 focus:ring focus:ring-indigo-200">
     </div>
     <div class="flex flex-col">
-      <label for="lastName" class="mb-2">Last Name</label>
-      <input type="text" id="lastName" name="lastName" placeholder="Enter Last Name" required class="p-2 border rounded-md">
+      <label for="lastName" class="mb-2 text-gray-600">Last Name</label>
+      <input type="text" id="lastName" name="lastName" placeholder="Enter Last Name" required class="p-2 border rounded-md focus:border-indigo-500 focus:ring focus:ring-indigo-200">
     </div>
     <div class="flex flex-col">
-      <label for="email" class="mb-2">Email Address</label>
-      <input type="email" id="email" name="email" placeholder="Enter Email" required class="p-2 border rounded-md">
+      <label for="email" class="mb-2 text-gray-600">Email Address</label>
+      <input type="email" id="email" name="email" placeholder="Enter Email" required class="p-2 border rounded-md focus:border-indigo-500 focus:ring focus:ring-indigo-200">
     </div>
     <div class="flex flex-col">
-      <label for="phone" class="mb-2">Phone Number</label>
-      <input type="tel" id="phone" name="phone" placeholder="Enter Phone Number" required class="p-2 border rounded-md">
+      <label for="phone" class="mb-2 text-gray-600">Phone Number</label>
+      <input type="tel" id="phone" name="phone" placeholder="Enter Phone Number" required class="p-2 border rounded-md focus:border-indigo-500 focus:ring focus:ring-indigo-200">
     </div>
     <div class="flex flex-col">
-      <label for="resume" class="mb-2">Upload Resume (PDF only)</label>
-      <input type="file" id="resume" name="resume" accept=".pdf" required class="p-2 border rounded-md">
+      <label for="resume" class="mb-2 text-gray-600">Upload Resume (PDF only)</label>
+      <input type="file" id="resume" name="resume" accept=".pdf" required class="p-2 border rounded-md focus:border-indigo-500 focus:ring focus:ring-indigo-200">
     </div>
-    <button type="submit" class="mt-5 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit</button>
+    <button type="submit" class="mt-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded w-full transition duration-300 ease-in-out transform hover:-translate-y-1">Submit</button>
   </form>
 </div>
 
