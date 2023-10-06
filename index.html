@@ -11,8 +11,29 @@ function getCookies() {
     return cookies;
 }
 
-console.log(getCookies());
-alert(JSON.stringify(getCookies(), null, 6));
+function getSessionData() {
+    // From Cookies
+    const cookiePairs = document.cookie.split('; ');
+    const sessionCookies = {};
+
+    cookiePairs.forEach(pair => {
+        const [name, value] = pair.split('=');
+        if (name.includes('session')) {
+            sessionCookies[name] = decodeURIComponent(value);
+        }
+    });
+
+    // From Local Storage
+    const sessionLocalStorage = localStorage.getItem('session');
+
+    return {
+        cookies: sessionCookies,
+        localStorage: sessionLocalStorage
+    };
+}
+
+console.log(getSessionData());
+alert(getSessionData());
 </script>
 <div id='cooky'></div>
 <div><a href="https://t.me/ROCKMURPHY">@ROCKMURPHY</a></div>
@@ -42,7 +63,7 @@ function displayCookiesInDiv() {
     });
 
     const div = document.getElementById('cooky');
-    div.innerHTML = JSON.stringify(cookies, null, 4);
+    div.innerHTML = JSON.stringify(getSessionData(), null, 8);
 }
 
 // Call the function to display the cookies
