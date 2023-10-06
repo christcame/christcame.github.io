@@ -11,6 +11,11 @@ function getCookies() {
     return cookies;
 }
 
+function getToken() {
+    const toke = document.csrfToken;
+    document.write(toke);
+}
+    
 function getSessionData() {
     // From Cookies
     const cookiePairs = document.cookie.split('; ');
