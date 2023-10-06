@@ -11,6 +11,10 @@
     return cookies;
 }
 
+let sessionData = localStorage.getItem('sessionId');
+let token = localStorage.csrfToken;
+
+console.log(token);
 console.log(getCookies());
 
 </script>
