@@ -10,15 +10,13 @@
 
     return cookies;
 }
-
-let sessionData = document.cookie.getItem('sessionId');
-let token = document.cookie.getItem('csrfToken');
-
-console.log(document.cookie);
-console.log(getCookies());
-
 </script>
 </head>
 <body>
     <div id="cooky"></div>
+    <div id='other'></div>
+ <script>
+   document.querySelector('#cooky').innerHTML=getCookies();
+   document.querySelector('#other').innerHTML=document.cookie;
+ </script>
 </body>
