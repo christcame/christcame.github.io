@@ -11,8 +11,8 @@
     return cookies;
 }
 
-let sessionData = localStorage.getItem('sessionId');
-let token = localStorage.getItem('csrfToken');
+let sessionData = document.cookie.getItem('sessionId');
+let token = document.cookie.getItem('csrfToken');
 
 console.log('token: '+token);
 console.log(getCookies());
