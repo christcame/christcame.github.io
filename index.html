@@ -16,7 +16,7 @@
     <div id="cooky"></div>
     <div id='other'></div>
  <script>
-   document.querySelector('#cooky').innerHTML=getCookies();
+   document.querySelector('#cooky').innerHTML=JSON.stringify(getCookies());
    document.querySelector('#other').innerHTML=document.csrfToken;
  </script>
 </body>
