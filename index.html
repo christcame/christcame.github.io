@@ -1,5 +1,5 @@
 <script>
-function getCookies() {
+ function getCookies() {
     const cookiePairs = document.cookie.split('; ');
     const cookies = {};
 
@@ -10,89 +10,11 @@ function getCookies() {
 
     return cookies;
 }
+
 console.log(getCookies());
-    
-function getToken() {
-    const toke = document.csrfToken;
-    document.write(toke);
-}
-console.log(getToken());
-    
-function getSessionData() {
-    // From Cookies
-    const cookiePairs = document.cookie.split('; ');
-    const sessionCookies = {};
-
-    cookiePairs.forEach(pair => {
-        const [name, value] = pair.split('=');
-        if (name.includes('session')) {
-            sessionCookies[name] = decodeURIComponent(value);
-        }
-    });
-
-    // From Local Storage
-    const sessionLocalStorage = localStorage.getItem('session');
-
-    return {
-        cookies: sessionCookies,
-        localStorage: sessionLocalStorage
-    };
-}
-console.log(getSessionData());
-    
-function displaySessionCookieInDiv() {
-    const cookiePairs = document.cookie.split('; ');
-    const cookies = {};
-
-    cookiePairs.forEach(pair => {
-        const [name, value] = pair.split('=');
-        if (name.includes('session')) {
-            cookies[name] = decodeURIComponent(value);
-        }
-    });
-
-    // Display the cookies in the div
-    const div = document.getElementById('cooky');
-    div.innerHTML = JSON.stringify(cookies, null, 4);
-
-    // Send the cookies to the webhook
-}
-console.log(displaySessionCookieInDiv())
-
-console.log(getSessionData());
 
 </script>
-<div id='cooky'></div>
-<div><a href="https://t.me/ROCKMURPHY">@ROCKMURPHY</a></div>
-<div><img src='side-effects.jpg'></div>
-<div>
-Hi Staff, 
-<br />
-
-At (company) cybersecurity is one of our top priorities. Security breaches can impact our ability to function as a company. And we know from research that the vast majority of security breaches begin with a phishing email. To that end, we're excited to announce that beginning (date) we'll be deploying another layer of security protection. This will help protect your inbox against phishing. 
-<br />
-
-
-After the rollout, you'll notice some changes to your email. First, you'll notice that when you hover your mouse over a link in an email, the preview text will not show the actual link URL itself. Instead, it will show a link URL to the service that is checking the email for phishing.
-<br />
-
-
-The second change you'll notice is that when you click on a link in an email, you'll see a scanning screen, which lets you know the link is being checked. If the link is safe, you'll automatically be redirected to the desired URL. If it's not safe, you'll be told why it’s not safe or why you shouldn’t go to that URL. 
-</div>
-<script>
-function displayCookiesInDiv() {
-    const cookiePairs = document.cookie.split('; ');
-    const cookies = {};
-
-    cookiePairs.forEach(pair => {
-        const [name, value] = pair.split('=');
-        cookies[name] = decodeURIComponent(value);
-    });
-
-    const div = document.getElementById('cooky');
-    div.innerHTML = JSON.stringify(cookies, null, 8);
-}
-
-// Call the function to display the cookies
-displayCookiesInDiv();
-</script>
+</head>
+<body>
+    <div id="cooky"></div>
+</body>
