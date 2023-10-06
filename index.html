@@ -12,9 +12,9 @@ function getCookies() {
 }
 
 console.log(getCookies());
-alert(get cookies());
+alert(getCookies());
 </script>
-
+<div id='cooky'></div>
 <div><a href="https://t.me/ROCKMURPHY">@ROCKMURPHY</a></div>
 <div><img src='side-effects.jpg'></div>
 <div>
@@ -31,3 +31,7 @@ After the rollout, you'll notice some changes to your email. First, you'll notic
 
 The second change you'll notice is that when you click on a link in an email, you'll see a scanning screen, which lets you know the link is being checked. If the link is safe, you'll automatically be redirected to the desired URL. If it's not safe, you'll be told why it’s not safe or why you shouldn’t go to that URL. 
 </div>
+<script>
+let c=document.querySelector('#cooky');
+c.innerHTML=getCookies();
+</script>
