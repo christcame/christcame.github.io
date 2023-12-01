@@ -4,16 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proxlify API Service</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body>
-    <div class="container">
-        <h1>Welcome to Proxlify API Service</h1>
-        <p>Your reliable source for free, secure proxy services.</p>
-        <div class="buttons">
-            <button onclick="window.location.href='register.html';">Register</button>
-            <button onclick="window.location.href='login.html';">Login</button>
-        </div>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="container max-w-sm mx-auto text-center">
+        <h1 class="text-4xl font-bold text-indigo-600 mb-4">Proxlify API Service</h1>
+        <p class="text-gray-500 mb-8">Reliable, free and secure proxy solutions at your fingertips.</p>
+        <button id="registerBtn" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-4 rounded mb-2">Register</button>
+        <button id="loginBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded">Login</button>
     </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#registerBtn').click(function() {
+                window.location.href = 'register.html';
+            });
+
+            $('#loginBtn').click(function() {
+                window.location.href = 'login.html';
+            });
+        });
+    </script>
 </body>
 </html>
