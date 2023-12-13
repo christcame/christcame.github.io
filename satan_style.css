@@ -1,0 +1,83 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+h1.display-2 {
+    font-size: 28px;
+    color: #d90000; /* Dark red for the main title */
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+hr.colorbar {
+    border: 0;
+    height: 3px;
+    background-image: linear-gradient(to right, #009bff, #ff00f7); /* Gradient color bar */
+    margin-bottom: 20px;
+}
+
+.attribution, .publish-date {
+    font-style: italic;
+    color: #888;
+    font-size: 14px;
+}
+
+.column {
+    margin-bottom: 15px;
+}
+
+p {
+    font-size: 16px;
+    margin-bottom: 15px;
+    text-align: justify;
+}
+
+.partner-banner, .partner-inline {
+    display: block;
+    width: 100%;
+    height: 250px;
+    background-color: #eaeaea; /* Placeholder for banners */
+    margin: 20px 0;
+    text-align: center;
+    line-height: 250px;
+    color: #999;
+    font-size: 20px;
+}
+
+.media-image {
+    width: 100%;
+    height: auto;
+    margin: 20px 0;
+}
+
+/* Testimonial styling */
+p strong {
+    font-size: 18px;
+    color: #0056b3; /* Blue color for emphasis */
+}
+
+/* Styling for timestamps */
+.lit-timestamp {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    h1.display-2 {
+        font-size: 24px;
+    }
+
+    p {
+        font-size: 14px;
+    }
+}
