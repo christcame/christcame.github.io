@@ -3,68 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landing Page with Changing Background</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
-        .background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            transition: background-image 1s ease-in-out;
-        }
-        .content {
-            position: relative;
-            z-index: 1;
-            color: white;
-            text-align: center;
-            padding-top: 20%;
-        }
-        .content h1 {
-            font-size: 4em;
-            margin: 0;
-        }
-        .content p {
-            font-size: 1.2em;
-        }
-    </style>
+    <title>First Offense Cover</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body>
-    <div class="background" id="background"></div>
-    <div class="content">
-        <h1>Welcome to Our Site</h1>
-        <p>Your journey begins here.</p>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen py-8">
+    <div class="container max-w-md mx-auto text-center">
+        <h1 class="text-4xl font-bold text-indigo-600 mb-4">First Offense by Lauren Milton</h1>
+        <!-- <img src="https://raw.githubusercontent.com/christcame/christcame.github.io/main/First_Offense_Cover-%5B08-07-2024%5D.png" alt="First Offense Cover" class="w-full h-auto rounded-lg shadow-lg mb-8"> -->
+        <img src="https://christcame.github.io/First_Offense_Cover-[08-07-2024].png" alt="First Offense Cover" class="w-full h-auto rounded-lg shadow-lg mb-8">
+        <p class="text-gray-500 mb-8">Book cover image displayed above.</p>
+        <!-- <button id="registerBtn" style="display: none;" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-4 rounded mb-2">Register</button> -->
+        <!-- <button id="loginBtn" style="display: none;" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded">Login</button> -->
+        <p class="text-gray-500 mb-8"><a href="https://www.reddit.com/user/gertrudelives/">u/gertrudelives on Reddit</a></p>
     </div>
-
     <script>
-        const images = [
-            'url("https://example.com/image1.jpg")',
-            'url("https://example.com/image2.jpg")',
-            'url("https://example.com/image3.jpg")'
-        ];
-
-        let currentIndex = 0;
-
-        function changeBackground() {
-            const background = document.getElementById('background');
-            background.style.backgroundImage = images[currentIndex];
-            currentIndex = (currentIndex + 1) % images.length;
-        }
-
-        setInterval(changeBackground, 5000); // Change image every 5 seconds
-
-        // Initial background setup
-        changeBackground();
+        $(document).ready(function() {
+            $('#registerBtn').click(function() {
+                window.location.href = 'https://docs.google.com/forms/d/e/1FAIpQLSerylOCuZby0RMg-iNBEkW4FQzvuQtoJoUQweq_cJb3yMdzaA/viewform?usp=sf_link';
+            });
+            $('#loginBtn').click(function() {
+                window.location.href = 'https://docs.google.com/forms/d/e/1FAIpQLSfA8Cvx1_U_FG4irmn_quYkkpDwrSXkc4AV_oj36ubsuTZBCA/viewform?usp=sf_link';
+            });
+        });
     </script>
 </body>
 </html>
