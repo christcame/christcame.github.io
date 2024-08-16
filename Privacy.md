@@ -3,7 +3,7 @@ christcame.github.io Privacy Policy
 
 Effective Date: 12/25/2020
 
-This Privacy Policy outlines how [Your Company Name] collects, uses, discloses, and protects your personal information.
+This Privacy Policy outlines how christcame.github.io collects, uses, discloses, and protects your personal information.
 
 1. Information We Collect
 
@@ -28,7 +28,7 @@ We implement reasonable security measures to protect your personal information f
 
 5. Your Rights
 
-You may have certain rights regarding your personal information, such as the right to access, correct, or delete your data. To exercise these rights, please contact us at [email protected]   
+You may have certain rights regarding your personal information, such as the right to access, correct, or delete your data. To exercise these rights, please contact us at christcameprivacy.spree030@passmail.net 
 
 6. Children's Privacy
 
@@ -40,7 +40,7 @@ We may update this Privacy Policy from time to time. We will notify you of any s
 
 8. Contact Us
 
-If you have any questions about this Privacy Policy, please contact us at [email protected]   
+If you have any questions about this Privacy Policy, please contact us at christcameprivacy.spree030@passmail.net
 
 Remember to replace the placeholder text with specific information about your company and services.
 
