@@ -1,0 +1,55 @@
+{
+  "name": "Chris Fowler",
+  "contact": {
+    "address": "Austin, TX 78702",
+    "phone": "(512) 666-7242",
+    "email": "chrisrfowler@gmail.com"
+  },
+  "professionalSummary": "Versatile professional with over 10 years in service industry, transitioning to tech consulting. Skilled in customer service, event management, and AI/ML solutions.",
+  "skills": [
+    "AI/ML",
+    "Technical Consulting",
+    "Project Management",
+    "Customer Service",
+    "Event Planning",
+    "Bartending"
+  ],
+  "experience": [
+    {
+      "jobTitle": "Tech Consultant",
+      "company": "DeepAI, Remote",
+      "jobDate": "Sept 2023 - Present",
+      "details": [
+        "Provide AI and machine learning consulting services",
+        "Collaborate on AI-driven projects and optimize algorithms"
+      ]
+    },
+    {
+      "jobTitle": "Lead Server/Bartender",
+      "company": "De Nada Cantina, Austin, TX",
+      "jobDate": "Jan 2019 - Aug 2023",
+      "details": [
+        "Managed events and catering orders",
+        "Excelled in customer service in a diverse environment"
+      ]
+    },
+    {
+      "jobTitle": "Server/Bartender",
+      "company": "Tokyo Grill, Victoria, TX",
+      "jobDate": "Jul 2017 - Dec 2018",
+      "details": [
+        "Developed cocktail knowledge and exotic cuisine expertise"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bachelor's Degree",
+      "institution": "Angelo State University",
+      "years": "2004 - 2008"
+    }
+  ],
+  "certifications": [
+    "TABC and Texas Food Handler Certifications"
+  ]
+}
