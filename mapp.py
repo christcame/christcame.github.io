@@ -1,37 +1,37 @@
 import os
 from flask import Flask, jsonify, request
-from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
+from mistralai import MistralClient
+from mistralai.chat import ChatMessage
 
 app = Flask(__name__)
 
 # Initialize Mistral AI client
 client = MistralClient(
-    api_key=os.environ["GITHUB_TOKEN"],
+    api_key=os.getenv("GITHUB_TOKEN"),
     endpoint="https://models.inference.ai.azure.com"
 )
 
 def get_mistral_response(prompt):
     """Get a response from the Mistral AI model."""
-    response = client.chat(
+    response = client.chat_completion(
         model="Mistral-large-2407",
         messages=[
             ChatMessage(role="system", content="You are an AI assistant that provides information about GitHub and its features."),
-            ChatMessage(role="user", content=prompt),
+            ChatMessage(role="user", content=prompt)
         ],
         temperature=0.7,
         max_tokens=4096,
-        top_p=1    
+        top_p=1.0
     )
     return response.choices[0].message.content
 
-@app.route('/user/<username>')
+@app.route('/user/<username>', methods=['GET'])
 def get_user_info(username):
     """Get information about a GitHub user."""
     prompt = f"Provide information about the GitHub user {username}."
     return jsonify({"response": get_mistral_response(prompt)})
 
-@app.route('/repos/<username>')
+@app.route('/repos/<username>', methods=['GET'])
 def get_user_repos(username):
     """Get information about repositories of a GitHub user."""
     prompt = f"List and describe some notable repositories of the GitHub user {username}."
@@ -45,7 +45,7 @@ def create_repo():
     prompt = f"Explain the process of creating a new GitHub repository named {repo_name}."
     return jsonify({"response": get_mistral_response(prompt)})
 
-@app.route('/issues/<owner>/<repo>')
+@app.route('/issues/<owner>/<repo>', methods=['GET'])
 def get_repo_issues(owner, repo):
     """Get information about issues in a specific repository."""
     prompt = f"Describe common types of issues that might be found in the GitHub repository {owner}/{repo}."
