@@ -13,7 +13,7 @@ client = MistralClient(
 
 def get_mistral_response(prompt):
     """Get a response from the Mistral AI model."""
-    response = client.chat_completion(
+    response = client.chat.complete(
         model="Mistral-large-2407",
         messages=[
             ChatMessage(role="system", content="You are an AI assistant that provides information about GitHub and its features."),
