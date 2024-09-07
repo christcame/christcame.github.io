@@ -1,27 +1,55 @@
-"""Run this model in Python
-
-> pip install mistralai
-"""
 import os
+from flask import Flask, jsonify, request
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
 
-# To authenticate with the model you will need to generate a personal access token (PAT) in your GitHub settings. 
-# Create your PAT token by following instructions here: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+app = Flask(__name__)
+
+# Initialize Mistral AI client
 client = MistralClient(
     api_key=os.environ["GITHUB_TOKEN"],
     endpoint="https://models.inference.ai.azure.com"
 )
 
-response = client.chat(
-    model="Mistral-large-2407",
-    messages=[
-        ChatMessage(role="system", content=""),
-        ChatMessage(role="user", content="What is the capital of France?"),
-    ],
-    temperature=0.7,
-    max_tokens=4096,
-    top_p=1    
-)
+def get_mistral_response(prompt):
+    """Get a response from the Mistral AI model."""
+    response = client.chat(
+        model="Mistral-large-2407",
+        messages=[
+            ChatMessage(role="system", content="You are an AI assistant that provides information about GitHub and its features."),
+            ChatMessage(role="user", content=prompt),
+        ],
+        temperature=0.7,
+        max_tokens=4096,
+        top_p=1    
+    )
+    return response.choices[0].message.content
 
-print(response.choices[0].message.content)
+@app.route('/user/<username>')
+def get_user_info(username):
+    """Get information about a GitHub user."""
+    prompt = f"Provide information about the GitHub user {username}."
+    return jsonify({"response": get_mistral_response(prompt)})
+
+@app.route('/repos/<username>')
+def get_user_repos(username):
+    """Get information about repositories of a GitHub user."""
+    prompt = f"List and describe some notable repositories of the GitHub user {username}."
+    return jsonify({"response": get_mistral_response(prompt)})
+
+@app.route('/create_repo', methods=['POST'])
+def create_repo():
+    """Provide information about creating a new repository on GitHub."""
+    data = request.json
+    repo_name = data.get('name', 'example-repo')
+    prompt = f"Explain the process of creating a new GitHub repository named {repo_name}."
+    return jsonify({"response": get_mistral_response(prompt)})
+
+@app.route('/issues/<owner>/<repo>')
+def get_repo_issues(owner, repo):
+    """Get information about issues in a specific repository."""
+    prompt = f"Describe common types of issues that might be found in the GitHub repository {owner}/{repo}."
+    return jsonify({"response": get_mistral_response(prompt)})
+
+if __name__ == '__main__':
+    app.run(debug=True)
