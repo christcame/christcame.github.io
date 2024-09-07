@@ -1,21 +1,32 @@
+"""Run this model in Python
+
+> pip install openai
+"""
 import os
-from mistralai import Mistral, UserMessage, SystemMessage
+from openai import OpenAI
 
-token = os.environ["GITHUB_TOKEN"]
-endpoint = "https://models.inference.ai.azure.com"
-model_name = "Mistral-large-2407"
+# To authenticate with the model you will need to generate a personal access token (PAT) in your GitHub settings. 
+# Create your PAT token by following instructions here: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+client = OpenAI(
+    base_url="https://models.inference.ai.azure.com",
+    api_key=os.environ["GITHUB_TOKEN"],
+)
 
-client = Mistral(api_key=token, server_url=endpoint)
-
-response = client.chat.complete(
-    model=model_name,
+response = client.chat.completions.create(
     messages=[
-        SystemMessage(content="You are a helpful assistant."),
-        UserMessage(content="What is the capital of France?"),
+        {
+            "role": "system",
+            "content": "",
+        },
+        {
+            "role": "user",
+            "content": "What is the capital of France?",
+        }
     ],
-    temperature=1.,
-    max_tokens=1000,
-    top_p=1.
+    model="gpt-4o-mini",
+    temperature=1,
+    max_tokens=4096,
+    top_p=1
 )
 
 print(response.choices[0].message.content)
