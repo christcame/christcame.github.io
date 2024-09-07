@@ -1,12 +1,12 @@
 import os
 from flask import Flask, jsonify, request
-from mistralai import MistralClient
+from mistralai import Mistral
 from mistralai.chat import ChatMessage
 
 app = Flask(__name__)
 
 # Initialize Mistral AI client
-client = MistralClient(
+client = Mistral(
     api_key=os.getenv("GITHUB_TOKEN"),
     endpoint="https://models.inference.ai.azure.com"
 )
