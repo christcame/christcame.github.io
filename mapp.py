@@ -1,7 +1,6 @@
 import os
 from flask import Flask, jsonify, request
-from mistralai import Mistral
-from mistralai.chat import ChatMessage
+from mistralai import Mistral, UserMessage
 
 app = Flask(__name__)
 
