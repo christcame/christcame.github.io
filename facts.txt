@@ -1,0 +1,5 @@
+[
+    "A group of flamingos is called a flamboyance.",
+    "The shortest war in history was between Zanzibar and England in 1896, lasting only 38 minutes.",
+    "Bananas are berries, but strawberries are not."
+]
