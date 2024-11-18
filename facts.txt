@@ -1,5 +1,8 @@
-[
-    "A group of flamingos is called a flamboyance.",
-    "The shortest war in history was between Zanzibar and England in 1896, lasting only 38 minutes.",
-    "Bananas are berries, but strawberries are not."
-]
+A group of flamingos is called a flamboyance.
+The shortest war in history was between Zanzibar and England in 1896, lasting only 38 minutes.
+Bananas are berries, but strawberries are not.
+Honeybees perform a "waggle dance" to communicate the location of food sources to their hive mates. The direction and duration of the dance convey precise information about the distance and direction to flowers rich in nectar and pollen.
+Octopuses have three hearts and nine brains! Two hearts pump blood to the gills, while the third circulates it to the rest of the body. Each of their eight arms has a mini-brain, which can operate independently, making them highly intelligent and capable of complex behaviors.
+Humans share about 60% of their DNA with bananas. While it doesn't mean we're part banana, it highlights the common genetic heritage all living organisms share, showcasing the interconnectedness of life on Earth.
+Although commonly referred to as a solid, glass is technically an amorphous solid, meaning it behaves like both a solid and a liquid. Over centuries, the glass in very old windows can appear thicker at the bottom due to this slow flow.
+The Eiffel Tower can grow up to 6 inches taller during the summer. This is because the iron expands as it heats up, causing the entire structure to elongate slightly in the warmer temperatures.
