@@ -1,6 +1,11 @@
 import os
 import random
 import uuid
+import hashlib
+import requests
+import time
+import tempfile
+import threading
 from flask import Flask, request, jsonify, send_file, render_template_string
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -12,6 +17,7 @@ CORS(app)  # Enable CORS for all routes
 
 # Configuration
 UPLOAD_FOLDER = 'file_pool'
+QUARANTINE_FOLDER = 'quarantine'
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB max file size
 ALLOWED_EXTENSIONS = {
     'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 
@@ -19,15 +25,144 @@ ALLOWED_EXTENSIONS = {
     'js', 'html', 'css', 'json', 'xml', 'csv', 'xlsx', 'pptx'
 }
 
+# Security Configuration
+VIRUSTOTAL_API_KEY = os.environ.get('VIRUSTOTAL_API_KEY', '')
+VIRUSTOTAL_URL = 'https://www.virustotal.com/vtapi/v2/file/scan'
+VIRUSTOTAL_REPORT_URL = 'https://www.virustotal.com/vtapi/v2/file/report'
+SCAN_TIMEOUT = 300  # 5 minutes timeout for virus scan
+MAX_SCAN_RETRIES = 30  # Maximum retries for scan results
+
+# Dangerous file extensions that are always blocked
+DANGEROUS_EXTENSIONS = {
+    'exe', 'bat', 'cmd', 'com', 'pif', 'scr', 'vbs', 'js', 'jar', 
+    'msi', 'dll', 'sys', 'drv', 'bin', 'deb', 'rpm', 'dmg', 'pkg',
+    'app', 'sh', 'ps1', 'psm1', 'psd1', 'ps1xml', 'psc1', 'psc2'
+}
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 
-# Create upload folder if it doesn't exist
+# Create upload and quarantine folders if they don't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(QUARANTINE_FOLDER, exist_ok=True)
+
+def calculate_file_hash(filepath):
+    """Calculate SHA256 hash of a file"""
+    sha256_hash = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
+def is_dangerous_file(filename):
+    """Check if file has dangerous extension"""
+    if '.' not in filename:
+        return False
+    extension = filename.rsplit('.', 1)[1].lower()
+    return extension in DANGEROUS_EXTENSIONS
 
 def allowed_file(filename):
+    """Check if file is allowed (safe extension and not dangerous)"""
+    if is_dangerous_file(filename):
+        return False
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def scan_file_with_virustotal(filepath):
+    """Scan file with VirusTotal API"""
+    if not VIRUSTOTAL_API_KEY:
+        print("Warning: VirusTotal API key not configured. Skipping virus scan.")
+        return {'clean': True, 'scan_performed': False, 'reason': 'No API key'}
+    
+    try:
+        # Calculate file hash first to check if already scanned
+        file_hash = calculate_file_hash(filepath)
+        
+        # Check if file was already scanned
+        report_params = {'apikey': VIRUSTOTAL_API_KEY, 'resource': file_hash}
+        report_response = requests.get(VIRUSTOTAL_REPORT_URL, params=report_params, timeout=30)
+        
+        if report_response.status_code == 200:
+            report_data = report_response.json()
+            if report_data['response_code'] == 1:  # Report exists
+                positives = report_data.get('positives', 0)
+                total = report_data.get('total', 0)
+                
+                if positives > 0:
+                    return {
+                        'clean': False, 
+                        'scan_performed': True,
+                        'positives': positives,
+                        'total': total,
+                        'reason': f'Virus detected by {positives}/{total} engines'
+                    }
+                else:
+                    return {
+                        'clean': True, 
+                        'scan_performed': True,
+                        'positives': 0,
+                        'total': total,
+                        'reason': 'File is clean'
+                    }
+        
+        # File not in database, submit for scanning
+        with open(filepath, 'rb') as f:
+            files = {'file': f}
+            params = {'apikey': VIRUSTOTAL_API_KEY}
+            scan_response = requests.post(VIRUSTOTAL_URL, files=files, params=params, timeout=60)
+        
+        if scan_response.status_code != 200:
+            return {'clean': True, 'scan_performed': False, 'reason': 'Scan submission failed'}
+        
+        scan_data = scan_response.json()
+        if scan_data['response_code'] != 1:
+            return {'clean': True, 'scan_performed': False, 'reason': 'Scan not accepted'}
+        
+        # Wait for scan results
+        resource = scan_data['resource']
+        for attempt in range(MAX_SCAN_RETRIES):
+            time.sleep(10)  # Wait 10 seconds between checks
+            
+            report_params = {'apikey': VIRUSTOTAL_API_KEY, 'resource': resource}
+            report_response = requests.get(VIRUSTOTAL_REPORT_URL, params=report_params, timeout=30)
+            
+            if report_response.status_code == 200:
+                report_data = report_response.json()
+                if report_data['response_code'] == 1:  # Scan complete
+                    positives = report_data.get('positives', 0)
+                    total = report_data.get('total', 0)
+                    
+                    if positives > 0:
+                        return {
+                            'clean': False, 
+                            'scan_performed': True,
+                            'positives': positives,
+                            'total': total,
+                            'reason': f'Virus detected by {positives}/{total} engines'
+                        }
+                    else:
+                        return {
+                            'clean': True, 
+                            'scan_performed': True,
+                            'positives': 0,
+                            'total': total,
+                            'reason': 'File is clean'
+                        }
+        
+        # Timeout waiting for results
+        return {'clean': False, 'scan_performed': False, 'reason': 'Scan timeout'}
+        
+    except Exception as e:
+        print(f"VirusTotal scan error: {str(e)}")
+        return {'clean': True, 'scan_performed': False, 'reason': f'Scan error: {str(e)}'}
+
+def quarantine_file(filepath, reason):
+    """Move file to quarantine folder"""
+    filename = os.path.basename(filepath)
+    quarantine_path = os.path.join(QUARANTINE_FOLDER, f"{int(time.time())}_{filename}")
+    os.rename(filepath, quarantine_path)
+    print(f"File quarantined: {filename} -> {quarantine_path} (Reason: {reason})")
+    return quarantine_path
 
 def get_file_info(filepath):
     """Get file information including size and type"""
@@ -93,6 +228,29 @@ def index():
                 </div>
             </div>
 
+            <!-- Security Status -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4">🔒 Security Status</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold" id="virusScanStatus">-</div>
+                        <div class="text-gray-600 text-sm">Virus Scanning</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-red-600" id="blockedExtensions">-</div>
+                        <div class="text-gray-600 text-sm">Blocked Extensions</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-orange-600" id="quarantinedFiles">-</div>
+                        <div class="text-gray-600 text-sm">Quarantined Files</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600" id="maxFileSize">-</div>
+                        <div class="text-gray-600 text-sm">Max File Size (MB)</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Upload Section -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <h2 class="text-2xl font-semibold mb-4">Upload a File</h2>
@@ -151,6 +309,39 @@ def index():
                 })
                 .catch(error => {
                     console.error('Error loading pool stats:', error);
+                });
+        }
+
+        // Load security status
+        function loadSecurityStatus() {
+            // Load security configuration
+            fetch('/api/security/status')
+                .then(response => response.json())
+                .then(data => {
+                    const virusStatus = document.getElementById('virusScanStatus');
+                    if (data.virustotal_enabled) {
+                        virusStatus.textContent = '✅ Enabled';
+                        virusStatus.className = 'text-2xl font-bold text-green-600';
+                    } else {
+                        virusStatus.textContent = '⚠️ Disabled';
+                        virusStatus.className = 'text-2xl font-bold text-yellow-600';
+                    }
+                    
+                    document.getElementById('blockedExtensions').textContent = data.dangerous_extensions_blocked;
+                    document.getElementById('maxFileSize').textContent = data.max_file_size_mb;
+                })
+                .catch(error => {
+                    console.error('Error loading security status:', error);
+                });
+
+            // Load quarantine statistics
+            fetch('/api/quarantine/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('quarantinedFiles').textContent = data.quarantined_files;
+                })
+                .catch(error => {
+                    console.error('Error loading quarantine stats:', error);
                 });
         }
 
@@ -242,6 +433,7 @@ def index():
                         <p class="text-sm text-gray-500">Max file size: 50MB</p>
                     `;
                     loadPoolStats();
+                    loadSecurityStatus();
                 } else {
                     showStatus(data.error || 'Upload failed', 'error');
                     uploadBtn.disabled = false;
@@ -302,6 +494,7 @@ def index():
 
         // Load initial stats
         loadPoolStats();
+        loadSecurityStatus();
     </script>
 </body>
 </html>
@@ -335,7 +528,7 @@ def pool_stats():
 
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
-    """Upload a file to the pool"""
+    """Upload a file to the pool with security scanning"""
     try:
         if 'file' not in request.files:
             return jsonify({'error': 'No file provided'}), 400
@@ -343,6 +536,10 @@ def upload_file():
         file = request.files['file']
         if file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
+        
+        # Security check: dangerous file extensions
+        if is_dangerous_file(file.filename):
+            return jsonify({'error': 'File type is potentially dangerous and not allowed'}), 400
         
         if not allowed_file(file.filename):
             return jsonify({'error': 'File type not allowed'}), 400
@@ -352,20 +549,41 @@ def upload_file():
         unique_id = str(uuid.uuid4())[:8]
         filename = f"{unique_id}_{original_filename}"
         
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(filepath)
+        # Save to temporary location first for scanning
+        temp_filepath = os.path.join(UPLOAD_FOLDER, f"temp_{filename}")
+        file.save(temp_filepath)
         
-        file_info = get_file_info(filepath)
+        # Security scan with VirusTotal
+        scan_result = scan_file_with_virustotal(temp_filepath)
+        
+        if not scan_result['clean']:
+            # File is infected, quarantine it
+            quarantine_file(temp_filepath, scan_result['reason'])
+            return jsonify({
+                'error': f'File rejected: {scan_result["reason"]}',
+                'scan_details': scan_result
+            }), 400
+        
+        # File is clean, move to final location
+        final_filepath = os.path.join(UPLOAD_FOLDER, filename)
+        os.rename(temp_filepath, final_filepath)
+        
+        file_info = get_file_info(final_filepath)
         
         return jsonify({
             'success': True,
             'filename': filename,
             'original_filename': original_filename,
             'size': file_info['size'],
-            'mime_type': file_info['mime_type']
+            'mime_type': file_info['mime_type'],
+            'security_scan': scan_result
         })
     
     except Exception as e:
+        # Clean up temp file if it exists
+        temp_filepath = os.path.join(UPLOAD_FOLDER, f"temp_{filename}" if 'filename' in locals() else "temp_unknown")
+        if os.path.exists(temp_filepath):
+            os.remove(temp_filepath)
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/download')
@@ -424,6 +642,34 @@ def download_random_file():
             mimetype='application/octet-stream'
         )
     
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/security/status')
+def security_status():
+    """Get security configuration status"""
+    return jsonify({
+        'virustotal_enabled': bool(VIRUSTOTAL_API_KEY),
+        'dangerous_extensions_blocked': len(DANGEROUS_EXTENSIONS),
+        'allowed_extensions': len(ALLOWED_EXTENSIONS),
+        'quarantine_folder': QUARANTINE_FOLDER,
+        'max_file_size_mb': MAX_FILE_SIZE // (1024 * 1024)
+    })
+
+@app.route('/api/quarantine/stats')
+def quarantine_stats():
+    """Get quarantine folder statistics"""
+    try:
+        quarantine_files = [f for f in os.listdir(QUARANTINE_FOLDER) 
+                          if os.path.isfile(os.path.join(QUARANTINE_FOLDER, f))]
+        
+        total_size = sum(os.path.getsize(os.path.join(QUARANTINE_FOLDER, f)) 
+                        for f in quarantine_files)
+        
+        return jsonify({
+            'quarantined_files': len(quarantine_files),
+            'total_size': total_size
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
