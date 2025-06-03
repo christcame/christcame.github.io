@@ -256,7 +256,7 @@ def index():
         <div class="max-w-4xl mx-auto">
             <!-- Header -->
             <div class="text-center mb-8">
-                <h1 class="text-4xl font-bold text-gray-800 mb-4">Random File Exchange</h1>
+                <h1 class="text-4xl font-bold text-gray-800 mb-4"><img src="https://christcame.github.io/logo.png"></h1>
                 <p class="text-lg text-gray-600">Upload a file, get a random file back!</p>
             </div>
 
