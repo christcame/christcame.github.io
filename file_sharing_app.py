@@ -6,6 +6,7 @@ import requests
 import time
 import tempfile
 import threading
+import json
 from flask import Flask, request, jsonify, send_file, render_template_string
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -175,6 +176,56 @@ def get_file_info(filepath):
         'modified': datetime.fromtimestamp(stat.st_mtime).isoformat()
     }
 
+def get_location_from_ip(ip_address):
+    """Get rough location data from IP address using ipapi.co"""
+    try:
+        # Skip location lookup for localhost/private IPs
+        if ip_address in ['127.0.0.1', 'localhost'] or ip_address.startswith('192.168.') or ip_address.startswith('10.') or ip_address.startswith('172.'):
+            return {
+                'city': 'Local Network',
+                'country': 'Local',
+                'country_code': 'LN',
+                'region': 'Private Network'
+            }
+        
+        # Use ipapi.co free service (1000 requests/month)
+        response = requests.get(f'https://ipapi.co/{ip_address}/json/', timeout=5)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Extract relevant location info (no precise coordinates)
+            location = {
+                'city': data.get('city', 'Unknown'),
+                'country': data.get('country_name', 'Unknown'),
+                'country_code': data.get('country_code', 'XX'),
+                'region': data.get('region', 'Unknown')
+            }
+            
+            print(f"Location lookup for {ip_address}: {location['city']}, {location['country']}")
+            return location
+        else:
+            print(f"Location lookup failed for {ip_address}: HTTP {response.status_code}")
+            return None
+            
+    except requests.exceptions.RequestException as e:
+        print(f"Location lookup error for {ip_address}: {str(e)}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error in location lookup for {ip_address}: {str(e)}")
+        return None
+
+def get_client_ip():
+    """Get the real client IP address, handling proxies"""
+    # Check for forwarded headers (common in production behind proxies)
+    if request.headers.get('X-Forwarded-For'):
+        # X-Forwarded-For can contain multiple IPs, take the first one
+        return request.headers.get('X-Forwarded-For').split(',')[0].strip()
+    elif request.headers.get('X-Real-IP'):
+        return request.headers.get('X-Real-IP')
+    else:
+        return request.remote_addr
+
 @app.route('/')
 def index():
     """Serve the main file sharing interface"""
@@ -269,14 +320,70 @@ def index():
                         Upload File
                     </button>
                 </div>
+                
+                <!-- Privacy Notice -->
+                <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div class="flex items-start">
+                        <svg class="w-4 h-4 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div class="text-sm text-yellow-800">
+                            <strong>Privacy Notice:</strong> Your approximate location (city/region) will be shared with file recipients to show file origin. No precise coordinates are stored.
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Download Section -->
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-2xl font-semibold mb-4">Get a Random File</h2>
-                <p class="text-gray-600 mb-4">Click the button below to download a random file from the pool.</p>
-                <button id="downloadBtn" class="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Download Random File
+                <p class="text-gray-600 mb-4">Preview a random file from the pool, then download it if you want.</p>
+                
+                <!-- File Preview -->
+                <div id="filePreview" class="hidden mb-4 p-4 bg-gray-50 rounded-lg border">
+                    <h3 class="font-semibold text-lg mb-2">File Preview</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium">Filename:</span>
+                            <span id="previewFilename" class="ml-2"></span>
+                        </div>
+                        <div>
+                            <span class="font-medium">Size:</span>
+                            <span id="previewSize" class="ml-2"></span>
+                        </div>
+                        <div>
+                            <span class="font-medium">Type:</span>
+                            <span id="previewType" class="ml-2"></span>
+                        </div>
+                        <div>
+                            <span class="font-medium">Uploaded:</span>
+                            <span id="previewUploadTime" class="ml-2"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Location Information -->
+                    <div id="locationInfo" class="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="font-medium text-blue-800">File Origin:</span>
+                        </div>
+                        <div id="locationDetails" class="mt-1 text-blue-700"></div>
+                    </div>
+                    
+                    <div class="mt-4 flex gap-2">
+                        <button id="confirmDownloadBtn" class="flex-1 bg-green-600 text-white py-2 px-4 rounded font-semibold hover:bg-green-700 transition duration-200">
+                            Download This File
+                        </button>
+                        <button id="getAnotherBtn" class="flex-1 bg-gray-600 text-white py-2 px-4 rounded font-semibold hover:bg-gray-700 transition duration-200">
+                            Get Another File
+                        </button>
+                    </div>
+                </div>
+                
+                <button id="previewBtn" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Preview Random File
                 </button>
             </div>
 
@@ -292,8 +399,13 @@ def index():
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const uploadBtn = document.getElementById('uploadBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
+        const previewBtn = document.getElementById('previewBtn');
+        const confirmDownloadBtn = document.getElementById('confirmDownloadBtn');
+        const getAnotherBtn = document.getElementById('getAnotherBtn');
+        const filePreview = document.getElementById('filePreview');
         const statusMessage = document.getElementById('statusMessage');
+        
+        let currentFileInfo = null;
 
         // Load pool statistics
         function loadPoolStats() {
@@ -448,10 +560,67 @@ def index():
             });
         });
 
-        // Download random file
-        downloadBtn.addEventListener('click', () => {
-            downloadBtn.disabled = true;
-            downloadBtn.textContent = 'Downloading...';
+        // Format date for display
+        function formatDate(isoString) {
+            if (!isoString) return 'Unknown';
+            const date = new Date(isoString);
+            return date.toLocaleString();
+        }
+
+        // Preview random file
+        previewBtn.addEventListener('click', () => {
+            previewBtn.disabled = true;
+            previewBtn.textContent = 'Loading Preview...';
+
+            fetch('/api/file/info')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                currentFileInfo = data;
+                
+                // Update preview display
+                document.getElementById('previewFilename').textContent = data.filename;
+                document.getElementById('previewSize').textContent = formatFileSize(data.size);
+                document.getElementById('previewType').textContent = data.mime_type || 'Unknown';
+                document.getElementById('previewUploadTime').textContent = formatDate(data.upload_time);
+                
+                // Update location information
+                const locationDetails = document.getElementById('locationDetails');
+                if (data.location) {
+                    const loc = data.location;
+                    locationDetails.innerHTML = `
+                        <div class="font-medium">${loc.city}, ${loc.region}</div>
+                        <div class="text-sm">${loc.country} (${loc.country_code})</div>
+                    `;
+                } else {
+                    locationDetails.innerHTML = '<div class="text-sm">Location information not available</div>';
+                }
+                
+                // Show preview section
+                filePreview.classList.remove('hidden');
+                previewBtn.classList.add('hidden');
+                
+                showStatus('File preview loaded!', 'success');
+            })
+            .catch(error => {
+                console.error('Preview error:', error);
+                showStatus('Preview failed: ' + error.message, 'error');
+            })
+            .finally(() => {
+                previewBtn.disabled = false;
+                previewBtn.textContent = 'Preview Random File';
+            });
+        });
+
+        // Download the previewed file
+        confirmDownloadBtn.addEventListener('click', () => {
+            if (!currentFileInfo) return;
+            
+            confirmDownloadBtn.disabled = true;
+            confirmDownloadBtn.textContent = 'Downloading...';
 
             fetch('/api/download')
             .then(response => {
@@ -473,6 +642,12 @@ def index():
                         document.body.removeChild(a);
                         
                         showStatus('File downloaded successfully!', 'success');
+                        
+                        // Reset preview
+                        filePreview.classList.add('hidden');
+                        previewBtn.classList.remove('hidden');
+                        currentFileInfo = null;
+                        
                         loadPoolStats();
                     });
                 } else {
@@ -486,10 +661,17 @@ def index():
                 showStatus('Download failed: ' + error.message, 'error');
             })
             .finally(() => {
-                downloadBtn.disabled = false;
-                downloadBtn.textContent = 'Download Random File';
-                loadPoolStats();
+                confirmDownloadBtn.disabled = false;
+                confirmDownloadBtn.textContent = 'Download This File';
             });
+        });
+
+        // Get another file
+        getAnotherBtn.addEventListener('click', () => {
+            filePreview.classList.add('hidden');
+            previewBtn.classList.remove('hidden');
+            currentFileInfo = null;
+            previewBtn.click(); // Automatically load another preview
         });
 
         // Load initial stats
@@ -505,7 +687,9 @@ def index():
 def pool_stats():
     """Get statistics about the file pool"""
     try:
-        files = os.listdir(UPLOAD_FOLDER)
+        all_files = os.listdir(UPLOAD_FOLDER)
+        # Filter out metadata files
+        files = [f for f in all_files if not f.endswith('.meta')]
         file_count = len(files)
         total_size = 0
         file_types = set()
@@ -568,7 +752,31 @@ def upload_file():
         final_filepath = os.path.join(UPLOAD_FOLDER, filename)
         os.rename(temp_filepath, final_filepath)
         
+        # Get file info
         file_info = get_file_info(final_filepath)
+        
+        # Get location data from uploader's IP
+        client_ip = get_client_ip()
+        location_data = get_location_from_ip(client_ip)
+        
+        # Store metadata including location
+        metadata = {
+            'filename': filename,
+            'original_filename': original_filename,
+            'size': file_info['size'],
+            'mime_type': file_info['mime_type'],
+            'upload_time': datetime.now().isoformat(),
+            'uploader_ip': client_ip,
+            'location': location_data,
+            'security_scan': scan_result
+        }
+        
+        # Save metadata to JSON file
+        metadata_filepath = os.path.join(UPLOAD_FOLDER, f"{filename}.meta")
+        with open(metadata_filepath, 'w') as f:
+            json.dump(metadata, f, indent=2)
+        
+        print(f"File uploaded: {original_filename} from {client_ip} ({location_data['city'] if location_data else 'Unknown'}, {location_data['country'] if location_data else 'Unknown'})")
         
         return jsonify({
             'success': True,
@@ -576,6 +784,7 @@ def upload_file():
             'original_filename': original_filename,
             'size': file_info['size'],
             'mime_type': file_info['mime_type'],
+            'location': location_data,
             'security_scan': scan_result
         })
     
@@ -596,8 +805,8 @@ def download_random_file():
         if not files:
             return jsonify({'error': 'No files available in the pool'}), 404
         
-        # Filter out files that are already being downloaded
-        available_files = [f for f in files if not f.endswith('.downloading')]
+        # Filter out files that are already being downloaded and metadata files
+        available_files = [f for f in files if not f.endswith('.downloading') and not f.endswith('.meta')]
         
         if not available_files:
             return jsonify({'error': 'No files available in the pool'}), 404
@@ -605,6 +814,17 @@ def download_random_file():
         # Select random file
         random_file = random.choice(available_files)
         filepath = os.path.join(UPLOAD_FOLDER, random_file)
+        
+        # Load metadata if available
+        metadata_filepath = os.path.join(UPLOAD_FOLDER, f"{random_file}.meta")
+        metadata = None
+        if os.path.exists(metadata_filepath):
+            try:
+                with open(metadata_filepath, 'r') as f:
+                    metadata = json.load(f)
+            except Exception as e:
+                print(f"Error loading metadata for {random_file}: {e}")
+                metadata = None
         
         # Extract original filename (remove unique ID prefix)
         if '_' in random_file:
@@ -616,8 +836,18 @@ def download_random_file():
         with open(filepath, 'rb') as f:
             file_content = f.read()
         
-        # Remove file from pool immediately
+        # Remove file and metadata from pool immediately
         os.remove(filepath)
+        if os.path.exists(metadata_filepath):
+            os.remove(metadata_filepath)
+        
+        # Log download with location info
+        location_info = "Unknown location"
+        if metadata and metadata.get('location'):
+            loc = metadata['location']
+            location_info = f"{loc.get('city', 'Unknown')}, {loc.get('country', 'Unknown')}"
+        
+        print(f"File downloaded: {original_filename} (originally from {location_info})")
         
         # Create a temporary file for download
         import tempfile
@@ -635,12 +865,23 @@ def download_random_file():
         from threading import Timer
         Timer(5.0, remove_temp_file).start()
         
-        return send_file(
+        # Create response with location headers
+        response = send_file(
             temp_file.name,
             as_attachment=True,
             download_name=original_filename,
             mimetype='application/octet-stream'
         )
+        
+        # Add location information to response headers
+        if metadata and metadata.get('location'):
+            loc = metadata['location']
+            response.headers['X-File-Origin-City'] = loc.get('city', 'Unknown')
+            response.headers['X-File-Origin-Country'] = loc.get('country', 'Unknown')
+            response.headers['X-File-Origin-Region'] = loc.get('region', 'Unknown')
+            response.headers['X-File-Upload-Time'] = metadata.get('upload_time', 'Unknown')
+        
+        return response
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -670,6 +911,52 @@ def quarantine_stats():
             'quarantined_files': len(quarantine_files),
             'total_size': total_size
         })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/file/info')
+def get_random_file_info():
+    """Get information about a random file including location data"""
+    try:
+        files = [f for f in os.listdir(UPLOAD_FOLDER) 
+                if os.path.isfile(os.path.join(UPLOAD_FOLDER, f)) and not f.endswith('.meta')]
+        
+        if not files:
+            return jsonify({'error': 'No files available in the pool'}), 404
+        
+        # Select random file
+        random_file = random.choice(files)
+        
+        # Load metadata if available
+        metadata_filepath = os.path.join(UPLOAD_FOLDER, f"{random_file}.meta")
+        metadata = None
+        if os.path.exists(metadata_filepath):
+            try:
+                with open(metadata_filepath, 'r') as f:
+                    metadata = json.load(f)
+            except Exception as e:
+                print(f"Error loading metadata for {random_file}: {e}")
+        
+        # Extract original filename
+        if '_' in random_file:
+            original_filename = '_'.join(random_file.split('_')[1:])
+        else:
+            original_filename = random_file
+        
+        # Get file info
+        filepath = os.path.join(UPLOAD_FOLDER, random_file)
+        file_info = get_file_info(filepath)
+        
+        response_data = {
+            'filename': original_filename,
+            'size': file_info['size'],
+            'mime_type': file_info['mime_type'],
+            'upload_time': metadata.get('upload_time') if metadata else None,
+            'location': metadata.get('location') if metadata else None
+        }
+        
+        return jsonify(response_data)
+    
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

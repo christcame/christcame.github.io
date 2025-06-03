@@ -6,9 +6,12 @@ A secure file sharing application where users can upload a file and receive a ra
 
 ### Core Functionality
 - **Random File Exchange**: Upload any file, get a random file back
+- **Location Tracking**: Shows file origin (city/region) to recipients for transparency
+- **File Preview System**: Preview file details and origin before downloading
 - **Pool Statistics**: Real-time view of files in the pool
 - **Drag & Drop Interface**: Easy file upload with modern UI
 - **Multiple File Types**: Support for 24+ safe file formats
+- **Privacy Protection**: Only approximate location shared, no precise coordinates stored
 
 ### Security Features
 - **🔒 VirusTotal Integration**: Automatic virus scanning of uploaded files
@@ -80,11 +83,33 @@ Open your browser to: `http://localhost:8080`
 ### ❌ Blocked Extensions (Dangerous)
 `.exe`, `.bat`, `.cmd`, `.com`, `.scr`, `.pif`, `.vbs`, `.js`, `.jar`, `.ps1`, `.sh`, `.dll`, `.sys`, `.msi`, `.reg`, `.cab`, `.deb`, `.rpm`, `.iso`, `.img`, `.dmg`, `.app`, `.ipa`, `.apk`, `.lnk`, `.url`
 
+## Location Tracking
+
+### How It Works
+- **IP Geolocation**: Uses ipapi.co service to determine approximate location from IP address
+- **Metadata Storage**: Location data stored in `.meta` files alongside uploaded files
+- **Privacy First**: Only city/region/country shared, no precise coordinates
+- **Transparency**: Recipients see file origin before downloading
+
+### Location Data Collected
+- City name (e.g., "New York")
+- Region/State (e.g., "New York")
+- Country (e.g., "United States")
+- Country code (e.g., "US")
+
+### Privacy Protection
+- No GPS coordinates stored
+- No personal information collected
+- Location data only used for file origin display
+- Users notified before upload about location sharing
+
 ## Directory Structure
 
 ```
 ├── file_sharing_app.py    # Main application
-├── uploads/               # Safe files available for download
+├── file_pool/             # Files available for download with metadata
+│   ├── *.txt, *.pdf, etc. # Uploaded files
+│   └── *.meta             # Location and security metadata
 ├── quarantine/           # Quarantined infected files
 ├── server.log            # Application logs
 ├── SECURITY.md           # Detailed security documentation
@@ -122,6 +147,27 @@ curl -X POST -F "file=@document.pdf" http://localhost:8080/api/upload
 ### Download Random File
 ```bash
 curl -O -J http://localhost:8080/api/download
+```
+
+### Preview Random File
+```bash
+curl http://localhost:8080/api/file/info
+```
+
+Response includes location data:
+```json
+{
+  "filename": "document.pdf",
+  "size": 1024,
+  "mime_type": "application/pdf",
+  "upload_time": "2025-06-03T10:30:00.000000",
+  "location": {
+    "city": "New York",
+    "region": "New York",
+    "country": "United States",
+    "country_code": "US"
+  }
+}
 ```
 
 ### Check Security Status
