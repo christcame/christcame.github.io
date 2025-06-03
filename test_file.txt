@@ -1,8 +1,0 @@
-This is a test file for the Random File Exchange!
-
-It contains some sample text to demonstrate the file sharing functionality.
-
-Created on: 2025-06-03
-Purpose: Testing the file upload and download system
-
-Feel free to share this file with others through the Random File Exchange platform!

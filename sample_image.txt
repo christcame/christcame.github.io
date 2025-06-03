@@ -1,8 +1,0 @@
-This is a sample text file that represents an image description.
-
-Image: A beautiful sunset over the ocean
-Colors: Orange, pink, purple, and gold
-Location: Pacific Coast
-Time: Golden hour
-
-This file demonstrates how different file types can be shared through the Random File Exchange platform.
