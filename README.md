@@ -263,3 +263,14 @@ For security issues, please see [SECURITY.md](SECURITY.md) for detailed informat
 - Check the logs in `server.log`
 - Review [SECURITY.md](SECURITY.md) for security-related questions
 - Open an issue on GitHub for bugs or feature requests
+
+## URL Analyzer Webapp
+
+Run `url_analyzer_app.py` to analyze the tone and subtext of any webpage.
+
+```bash
+pip install Flask requests beautifulsoup4 textblob
+python url_analyzer_app.py
+```
+
+Visit <http://localhost:5010/> in your browser and submit a URL.

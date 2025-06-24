@@ -1,0 +1,20 @@
+<!doctype html>
+<title>URL Analyzer</title>
+<h1>Analyze URL Content</h1>
+<form method="post">
+  <input name="url" placeholder="Enter URL" style="width: 300px;">
+  <input type="submit" value="Analyze">
+</form>
+{% if result %}
+  <h2>Results for {{ result.url }}</h2>
+  {% if result.error %}
+    <p style='color:red;'>Error: {{ result.error }}</p>
+  {% else %}
+    <p><strong>Polarity:</strong> {{ result.polarity }}</p>
+    <p><strong>Subjectivity:</strong> {{ result.subjectivity }}</p>
+    <p><strong>Tone:</strong> {{ result.tone }}</p>
+    <p><strong>Emotion:</strong> {{ result.emotion }}</p>
+    <p><strong>Subtext:</strong> {{ result.subtext }}</p>
+  {% endif %}
+{% endif %}
+
