@@ -1,0 +1,8 @@
+Contact: 7r0yC4rb0n1@proton.me
+Encryption: https://christcame.github.io/pgp.txt
+Acknowledgements: https://christcame.github.io/hacks-of-fame/
+Preferred_languages: en, ru, esp
+Expires: 2026-02-02T22:13:00.000Z
+Policy: https://christcame.github.io/security-policy.txt
+Hiring: https://christcame.github.io/now-hiring/
+Canary: https://christcame.github.io/.well-known/canary.txt
